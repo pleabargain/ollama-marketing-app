@@ -1,3 +1,10 @@
+# URL
+https://github.com/pleabargain/ollama-marketing-app
+
+# Why?
+I saw a guy selling this as an app. I said to myself: that's trivial. And it was. And it still is!
+
+
 # Marketing Automation Workflow Generator
 
 A web-based application that generates personalized marketing automation workflows using AI-powered language models through the Ollama platform.
