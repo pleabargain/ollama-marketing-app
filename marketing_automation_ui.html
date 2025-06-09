@@ -221,6 +221,21 @@
         .copy-btn.copied::after {
             content: " ✓";
         }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+            display: none;
+        }
+        
+        input.error {
+            border-color: #dc3545;
+        }
+        
+        input.error:focus {
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -345,20 +360,88 @@
             return data.response || data.message || 'No response received';
         }
 
-        // Handle form submission
+        // Input sanitization functions
+        const sanitizeInput = (input) => {
+            if (typeof input !== 'string') return '';
+            
+            // Trim whitespace
+            let sanitized = input.trim();
+            
+            // Remove HTML tags
+            sanitized = sanitized.replace(/<[^>]*>/g, '');
+            
+            // Escape special characters
+            sanitized = sanitized
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+            
+            return sanitized;
+        };
+
+        const validateInput = (input, fieldName) => {
+            const errors = [];
+            
+            // Check for minimum length
+            if (input.length < 3) {
+                errors.push(`${fieldName} must be at least 3 characters long`);
+            }
+            
+            // Check for maximum length
+            if (input.length > 500) {
+                errors.push(`${fieldName} must be less than 500 characters`);
+            }
+            
+            // Updated pattern to allow more marketing-appropriate characters
+            // Allows: letters, numbers, spaces, hyphens, slashes, periods, commas, 
+            // exclamation marks, question marks, parentheses, ampersands, plus signs,
+            // percentages, and apostrophes
+            const allowedPattern = /^[a-zA-Z0-9\s.,!?()&+\-%'\/]+$/;
+            if (!allowedPattern.test(input)) {
+                errors.push(`${fieldName} contains invalid characters. Allowed characters: letters, numbers, spaces, and common punctuation (.,!?()-&+%'/).`);
+            }
+            
+            return errors;
+        };
+
+        // Modified form handling
         document.getElementById('marketingForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            // Get form values
+            const business = sanitizeInput(document.getElementById('business').value);
+            const persona = sanitizeInput(document.getElementById('persona').value);
+            const challenges = sanitizeInput(document.getElementById('challenges').value);
+            const usp = sanitizeInput(document.getElementById('usp').value);
+            
+            // Validate all inputs
+            const errors = [
+                ...validateInput(business, 'Business name'),
+                ...validateInput(persona, 'Customer persona'),
+                ...validateInput(challenges, 'Customer challenges'),
+                ...validateInput(usp, 'Unique selling proposition')
+            ];
+            
+            // Show errors if any
+            if (errors.length > 0) {
+                const resultContainer = document.getElementById('resultContainer');
+                resultContainer.className = 'result-container error';
+                resultContainer.style.display = 'block';
+                resultContainer.innerHTML = `
+                    <h3>Validation Errors</h3>
+                    <div class="result-text">
+                        ${errors.map(error => `• ${error}`).join('<br>')}
+                    </div>
+                `;
+                return;
+            }
             
             if (!ollamaConnected) {
                 alert('Please ensure Ollama is running on localhost:11434 before generating workflows.');
                 return;
             }
-
-            const formData = new FormData(e.target);
-            const business = formData.get('business');
-            const persona = formData.get('persona');
-            const challenges = formData.get('challenges');
-            const usp = formData.get('usp');
 
             // Create the prompt
             const prompt = `Develop a marketing automation workflow for ${business} that guides ${persona} through the customer journey, delivering relevant content that addresses their ${challenges} and reinforces our ${usp}. 
@@ -467,6 +550,38 @@ Make the response practical and actionable.`;
 
         // Recheck connection every 30 seconds
         setInterval(checkOllamaConnection, 30000);
+
+        // Add input validation on blur
+        const addInputValidation = (inputId, fieldName) => {
+            const input = document.getElementById(inputId);
+            input.addEventListener('blur', () => {
+                const value = sanitizeInput(input.value);
+                const errors = validateInput(value, fieldName);
+                
+                // Update input value with sanitized version
+                input.value = value;
+                
+                // Show/hide error message
+                let errorElement = input.nextElementSibling;
+                if (errors.length > 0) {
+                    if (!errorElement || !errorElement.classList.contains('error-message')) {
+                        errorElement = document.createElement('div');
+                        errorElement.className = 'error-message';
+                        input.parentNode.insertBefore(errorElement, input.nextSibling);
+                    }
+                    errorElement.textContent = errors[0];
+                    errorElement.style.display = 'block';
+                } else if (errorElement && errorElement.classList.contains('error-message')) {
+                    errorElement.style.display = 'none';
+                }
+            });
+        };
+
+        // Add validation to all inputs
+        addInputValidation('business', 'Business name');
+        addInputValidation('persona', 'Customer persona');
+        addInputValidation('challenges', 'Customer challenges');
+        addInputValidation('usp', 'Unique selling proposition');
     </script>
 </body>
 </html>

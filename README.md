@@ -22,6 +22,7 @@ This HTML application helps businesses create comprehensive marketing automation
 - **Pre-loaded Sample Data**: Includes realistic test data for quick testing and demonstration
 - **Responsive Design**: Modern, mobile-friendly interface with gradient backgrounds and smooth animations
 - **Error Handling**: Comprehensive error messages and troubleshooting guidance
+- **Input Validation & Sanitization**: Robust input validation with real-time feedback and security measures
 
 ## What It Generates
 
@@ -157,6 +158,35 @@ For issues related to:
 - **Ollama**: Visit [Ollama Documentation](https://github.com/jmorganca/ollama)
 - **This Application**: Check the troubleshooting section above or review the HTML source code
 
+## Input Validation
+
+The application includes comprehensive input validation and sanitization to ensure data quality and security:
+
+### Validation Rules
+- **Length Requirements**:
+  - Minimum: 3 characters
+  - Maximum: 500 characters per field
+
+- **Allowed Characters**:
+  - Letters (a-z, A-Z)
+  - Numbers (0-9)
+  - Spaces
+  - Common punctuation (.,!?()-&+%'/)
+
+### Security Features
+- HTML tag stripping
+- Special character escaping
+- Real-time validation
+- Form submission validation
+- XSS prevention
+- Input sanitization
+
+### User Feedback
+- Real-time validation on input blur
+- Clear error messages
+- Visual feedback for invalid inputs
+- Summary of all errors on form submission
+
 ---
 
-*Last Updated: January 2025*
+*Last Updated: 20240319*
